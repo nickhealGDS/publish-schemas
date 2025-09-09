@@ -1,0 +1,33 @@
+name: Publish release
+
+on:
+  push:
+    branches:
+      - "main"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "22.x"
+
+    - name: Install action deps
+      shell: bash
+      run: |
+        cp "$GITHUB_ACTION_PATH/package.json" "$GITHUB_WORKSPACE/package.json"
+        cp "$GITHUB_ACTION_PATH/package-lock.json" "$GITHUB_WORKSPACE/package-lock.json"
+        npm ci
+
+    - name: Check version
+      id: check-version
+      shell: bash
+      run: |
+        npm run release
+
+    - name: Log version
+      shell: bash
+      run: |
+        echo "The new release version is ${{ steps.check-version.outputs.new-release-version }}"
